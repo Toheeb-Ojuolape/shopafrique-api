@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -32,7 +31,6 @@ func isEmpty(value interface{}) bool {
 		return v == 0
 	// Add more cases for other types if needed
 	default:
-		fmt.Printf("Validation for type %T not implemented\n", v)
 		return true // Consider unknown types as empty
 	}
 }

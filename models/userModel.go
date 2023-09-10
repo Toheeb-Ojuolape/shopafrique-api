@@ -6,13 +6,13 @@ import (
 )
 
 type User struct {
-	ID uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	ID uuid.UUID `gorm:"type:uuid;primary_key;unique"`
 	gorm.Model
 	Email            string `gorm:"unique"`
 	FirstName        string
 	LastName         string
 	Country          string
-	PhoneNumber      string `gorm:"unique"`
+	PhoneNumber      string
 	BusinessName     string
 	BusinessType     string
 	LightningAddress string
