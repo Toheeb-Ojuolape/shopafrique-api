@@ -9,16 +9,13 @@ import (
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/services"
+	"github.com/Toheeb-Ojuolape/shopafrique-api/types"
 	"github.com/gofiber/fiber/v2"
 )
 
-type EmailRequest struct {
-	Email string
-}
-
 // sends an email otp to the user
 func VerifyEmail(c *fiber.Ctx) error {
-	var req EmailRequest
+	var req types.EmailRequest
 	var user models.User
 	c.BodyParser(&req)
 
@@ -44,8 +41,6 @@ func VerifyEmail(c *fiber.Ctx) error {
 	if err.Error != nil {
 		return handleErrors.HandleBadRequest(c, "Otp not sent successfully")
 	}
-
-	fmt.Print(req.Email)
 
 	emailErr := services.SendMail(
 		"Verify Your Email",
