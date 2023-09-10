@@ -64,6 +64,6 @@ func LoginController(c *fiber.Ctx) error {
 	//Send the token and other details to the user
 	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
 		Message: "Login Successful",
-		Data:    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "balance": user.Balance, "token": tokenString},
+		Data:    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "balance": user.Balance, "country": user.Country, "token": tokenString},
 	})
 }

@@ -27,5 +27,8 @@ func main() {
 	auth := app.Group("auth")
 	routes.AuthRoutes(auth)
 
+	user := app.Group("user")
+	routes.UserRoutes(user)
+
 	log.Fatal(app.Listen(":" + os.Getenv("PORT")))
 }
