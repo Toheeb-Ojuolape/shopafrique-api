@@ -2,8 +2,9 @@ package authControllers
 
 import (
 	"fmt"
-	"net/http"
 
+	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
+	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/helpers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
@@ -25,18 +26,12 @@ func VerifyEmail(c *fiber.Ctx) error {
 	missingProps := helpers.ValidateRequest(req)
 
 	if missingProps != "" {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid parameters passed",
-			"error":   "Request is missing " + missingProps,
-		})
+		return handleErrors.HandleBadRequest(c, "Invalid parameters passed. Request is missing "+missingProps)
 	}
 
 	// check if this user has an account already
-	result := initializers.DB.Where("email = ?", req.Email).First(&user)
-	if result.Error != nil {
-		c.Status(http.StatusConflict).JSON(fiber.Map{
-			"message": "User with this email already exist",
-		})
+	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err == nil {
+		return handleErrors.HandleBadRequest(c, err.Error())
 	}
 
 	sessionId := helpers.GenerateSessionId()
@@ -46,21 +41,24 @@ func VerifyEmail(c *fiber.Ctx) error {
 	otp := models.Otp{ID: sessionId, Email: req.Email, Otp: fmt.Sprint(otpNumber), ExpiredAt: expiry}
 
 	err := initializers.DB.Create(&otp)
-	fmt.Println(err)
 	if err.Error != nil {
-		c.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"message": "Otp not sent successfully",
-			"error":   fmt.Sprint(err.Error),
-		})
+		return handleErrors.HandleBadRequest(c, "Otp not sent successfully")
 	}
 
-	services.SendMail(
+	fmt.Print(req.Email)
+
+	emailErr := services.SendMail(
 		"Verify Your Email",
 		fmt.Sprintf("<h1>Hey %v </h1> <p>Kindly use this otp to verify your email: <strong>%v</strong></p>", req.Email, otpNumber),
 		string(req.Email),
-		fmt.Sprint(sessionId),
-		c,
 	)
 
-	return nil
+	if emailErr != nil {
+		return handleErrors.HandleBadRequest(c, fmt.Sprint(err))
+	}
+
+	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
+		Message: "OTP sent successfully",
+		Data:    map[string]interface{}{"sessionId": sessionId},
+	})
 }

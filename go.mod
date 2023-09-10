@@ -11,7 +11,10 @@ require (
 	gorm.io/gorm v1.25.0
 )
 
-require github.com/stretchr/testify v1.8.3 // indirect
+require (
+	github.com/golang-jwt/jwt/v5 v5.0.0 // direct
+	github.com/stretchr/testify v1.8.3 // indirect
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
@@ -29,7 +32,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.49.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.13.0 // direct
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 )

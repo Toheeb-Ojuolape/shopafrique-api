@@ -1,15 +1,12 @@
 package services
 
 import (
-	"log"
-	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	mailjet "github.com/mailjet/mailjet-apiv3-go"
 )
 
-func SendMail(title string, body string, to string, sessionId string, c *fiber.Ctx) {
+func SendMail(title string, body string, to string) error {
 	mailjetClient := mailjet.NewMailjetClient(os.Getenv("MJ_APIKEY_PUBLIC"), os.Getenv("MJ_APIKEY_PRIVATE"))
 	messagesInfo := []mailjet.InfoMessagesV31{
 		{
@@ -31,12 +28,8 @@ func SendMail(title string, body string, to string, sessionId string, c *fiber.C
 	messages := mailjet.MessagesV31{Info: messagesInfo}
 	_, err := mailjetClient.SendMailV31(&messages)
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
-	c.Status(http.StatusOK).JSON(fiber.Map{
-		"message":   "Email sent successfully",
-		"sessionId": sessionId,
-	})
+	return nil
 }

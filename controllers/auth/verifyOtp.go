@@ -60,7 +60,7 @@ func VerifyOtp(c *fiber.Ctx) error {
 	} else {
 		return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
 			Message: "OTP verified successfully",
-			Data:    processId,
+			Data:    map[string]interface{}{"processId": processId},
 		})
 	}
 }
