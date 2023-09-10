@@ -1,8 +1,6 @@
 package authControllers
 
 import (
-	"fmt"
-
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/helpers"
@@ -50,7 +48,6 @@ func ResetPassword(c *fiber.Ctx) error {
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 
-	fmt.Println(err)
 	if err == nil {
 		return handleErrors.HandleBadRequest(c, "Password already used. Kindly use another one")
 	}
@@ -64,18 +61,14 @@ func ResetPassword(c *fiber.Ctx) error {
 	if err := initializers.DB.Model(&user).Where("id = ?", user.ID).Update("password", string(hash)).Error; err != nil {
 		return handleErrors.HandleBadRequest(c, err.Error())
 
-	} else {
-
-		//delete the process
-		if err := initializers.DB.Delete(&process).Error; err != nil {
-			return handleErrors.HandleBadRequest(c, err.Error())
-		}
-
-		// Password update successful
-
-		return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
-			Message: "Password updated successfully",
-		})
 	}
+	//delete the process
+	if err := initializers.DB.Delete(&process).Error; err != nil {
+		return handleErrors.HandleBadRequest(c, err.Error())
+	}
+	// Password update successful
+	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
+		Message: "Password updated successfully",
+	})
 
 }
