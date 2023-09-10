@@ -13,8 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// sends an email otp to the user
-func VerifyEmail(c *fiber.Ctx) error {
+func ForgotPassword(c *fiber.Ctx) error {
 	var req types.EmailRequest
 	var user models.User
 	c.BodyParser(&req)
@@ -26,9 +25,8 @@ func VerifyEmail(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "Invalid parameters passed. Request is missing "+missingProps)
 	}
 
-	// check if this user has an account already
-	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err == nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return handleErrors.HandleBadRequest(c, "User account does not exist")
 	}
 
 	sessionId := helpers.GenerateSessionId()
@@ -44,7 +42,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 
 	emailErr := services.SendMail(
 		"Verify Your Email",
-		fmt.Sprintf("<h1>Hey %v </h1> <p>Kindly use this otp to verify your email: <strong>%v</strong></p>", req.Email, otpNumber),
+		fmt.Sprintf("<h1>Hey %v.</h1> <p> Sorry you forgot your password. Kindly use this otp to verify your email: <strong>%v</strong></p>", user.FirstName, otpNumber),
 		string(req.Email),
 	)
 
@@ -56,4 +54,5 @@ func VerifyEmail(c *fiber.Ctx) error {
 		Message: "OTP sent successfully",
 		Data:    map[string]interface{}{"sessionId": sessionId},
 	})
+
 }
