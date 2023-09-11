@@ -19,7 +19,6 @@ import (
 // sends an email otp to the user
 func VerifyEmail(c *fiber.Ctx) error {
 	var req types.EmailRequest
-	var user models.User
 	c.BodyParser(&req)
 
 	// check if email is defined and is a valid email address
@@ -29,8 +28,10 @@ func VerifyEmail(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "Invalid parameters passed. Request is missing "+missingProps)
 	}
 
-	// check if this user has an account already
-	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err == nil {
+	var count int64
+	initializers.DB.Model(&models.User{}).Where("email = ?", req.Email).Count(&count)
+
+	if count > 0 {
 		return handleErrors.HandleBadRequest(c, "User already has an account")
 	}
 
