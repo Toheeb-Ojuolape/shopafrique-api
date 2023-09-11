@@ -45,15 +45,18 @@ func Signup(c *fiber.Ctx) error {
 	// validate processId
 	var process models.Process
 	if err := initializers.DB.Find(&process, "id = ?", req.ProcessId).Error; err != nil {
-		return handleErrors.HandleBadRequest(c, "Invalid ProcessId")
+		return handleErrors.HandleBadRequest(c, "Signup process is incomplete. Kindly try again")
 	}
 
 	if helpers.HasEmptyValues(process) {
-		return handleErrors.HandleBadRequest(c, "Invalid ProcessId")
+		return handleErrors.HandleBadRequest(c, "Signup process is incomplete. Kindly restart signup")
+	}
+
+	if time.Now().Unix() > process.Expiry.Unix() {
+		return handleErrors.HandleBadRequest(c, "Process has expired. Kindly try again from the beginning")
 	}
 
 	// check for fraud
-
 	if req.Email != process.Email {
 		return handleErrors.HandleBadRequest(c, "Suspected malicious signup. Verified email different from email at request")
 	}
@@ -67,7 +70,7 @@ func Signup(c *fiber.Ctx) error {
 
 	newUUID, err := uuid.NewRandom()
 	if err != nil {
-		return handleErrors.HandleBadRequest(c, "Something went wrong "+err.Error())
+		return handleErrors.HandleBadRequest(c, "Something went wrong while creating user")
 	}
 
 	user := models.User{
@@ -87,11 +90,11 @@ func Signup(c *fiber.Ctx) error {
 	result := initializers.DB.Create(&user)
 
 	if result.Error != nil {
-		return handleErrors.HandleBadRequest(c, fmt.Sprint(result.Error))
+		return handleErrors.HandleBadRequest(c, "User with this details already exits")
 	}
 
 	//delete the process
-	if err := initializers.DB.Delete(&process).Error; err != nil {
+	if err := initializers.DB.Unscoped().Delete(&process).Error; err != nil {
 		return handleErrors.HandleBadRequest(c, "Something went wrong "+fmt.Sprint(err))
 	}
 

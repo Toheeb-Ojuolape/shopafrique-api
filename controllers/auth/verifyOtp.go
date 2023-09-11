@@ -10,6 +10,7 @@ import (
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type OtpRequest struct {
@@ -40,12 +41,14 @@ func VerifyOtp(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "OTP has expired")
 	}
 
-	if otp.Otp != req.Otp {
+	// compare otp from request with hashed otp in db
+	hashErr := bcrypt.CompareHashAndPassword([]byte(otp.Otp), []byte(req.Otp))
+	if hashErr != nil {
 		return handleErrors.HandleBadRequest(c, "OTP is invalid")
 	}
 
 	//if all pass, delete the session and return a processId
-	if err := initializers.DB.Delete(&otp).Error; err != nil {
+	if err := initializers.DB.Unscoped().Delete(&otp).Error; err != nil {
 		return handleErrors.HandleBadRequest(c, "Something went wrong "+fmt.Sprint(err))
 	}
 	//create processId
