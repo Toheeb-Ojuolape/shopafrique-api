@@ -1,6 +1,8 @@
 package authControllers
 
 import (
+	"time"
+
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/helpers"
@@ -24,11 +26,15 @@ func ResetPassword(c *fiber.Ctx) error {
 
 	var process models.Process
 	if err := initializers.DB.Find(&process, "id = ?", req.ProcessId).Error; err != nil {
-		return handleErrors.HandleBadRequest(c, "Invalid ProcessId")
+		return handleErrors.HandleBadRequest(c, "Unauthorized Process")
 	}
 
 	if helpers.HasEmptyValues(process) {
-		return handleErrors.HandleBadRequest(c, "Invalid ProcessId")
+		return handleErrors.HandleBadRequest(c, "Invalid parameters passed")
+	}
+
+	if time.Now().Unix() > process.Expiry.Unix() {
+		return handleErrors.HandleBadRequest(c, "Process has expired. Kindly try again from the beginning")
 	}
 
 	var user models.User
@@ -54,17 +60,17 @@ func ResetPassword(c *fiber.Ctx) error {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
 	if err != nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+		return handleErrors.HandleBadRequest(c, "Error occured while resetting password")
 	}
 
 	//set the new password
 	if err := initializers.DB.Model(&user).Where("id = ?", user.ID).Update("password", string(hash)).Error; err != nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+		return handleErrors.HandleBadRequest(c, "Something went wrong while setting new password")
 
 	}
 	//delete the process
-	if err := initializers.DB.Delete(&process).Error; err != nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+	if err := initializers.DB.Unscoped().Delete(&process).Error; err != nil {
+		return handleErrors.HandleBadRequest(c, "Something went wrong")
 	}
 	// Password update successful
 	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{

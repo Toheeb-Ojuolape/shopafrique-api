@@ -31,7 +31,7 @@ func VerifyToken(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+		return handleErrors.HandleBadRequest(c, "Something went wrong")
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {

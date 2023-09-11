@@ -2,6 +2,7 @@ package authControllers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
@@ -11,6 +12,8 @@ import (
 	"github.com/Toheeb-Ojuolape/shopafrique-api/services"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/types"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 // sends an email otp to the user
@@ -19,7 +22,7 @@ func VerifyEmail(c *fiber.Ctx) error {
 	var user models.User
 	c.BodyParser(&req)
 
-	// check if email is defined
+	// check if email is defined and is a valid email address
 	missingProps := helpers.ValidateRequest(req)
 
 	if missingProps != "" {
@@ -28,28 +31,42 @@ func VerifyEmail(c *fiber.Ctx) error {
 
 	// check if this user has an account already
 	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err == nil {
-		return handleErrors.HandleBadRequest(c, err.Error())
+		return handleErrors.HandleBadRequest(c, "User already has an account")
 	}
 
 	sessionId := helpers.GenerateSessionId()
 	otpNumber := helpers.GenerateOtp()
-	expiry := helpers.GenerateExpiry()
+	expiry := time.Now().Add(time.Minute * 15)
 
-	otp := models.Otp{ID: sessionId, Email: req.Email, Otp: fmt.Sprint(otpNumber), ExpiredAt: expiry}
+	//hash the otpNumber stored in db
+	hashedOtp, hashErr := bcrypt.GenerateFromPassword([]byte(fmt.Sprint(otpNumber)), 10)
 
-	err := initializers.DB.Create(&otp)
-	if err.Error != nil {
-		return handleErrors.HandleBadRequest(c, "Otp not sent successfully")
+	if hashErr != nil {
+		return handleErrors.HandleBadRequest(c, "Failed to hash password")
 	}
 
-	emailErr := services.SendMail(
-		"Verify Your Email",
-		fmt.Sprintf("<h1>Hey %v </h1> <p>Kindly use this otp to verify your email: <strong>%v</strong></p>", req.Email, otpNumber),
-		string(req.Email),
-	)
+	otp := models.Otp{ID: sessionId, Email: req.Email, Otp: string(hashedOtp), ExpiredAt: expiry}
 
-	if emailErr != nil {
-		return handleErrors.HandleBadRequest(c, fmt.Sprint(err))
+	err := initializers.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&otp).Error; err != nil {
+			return err
+		}
+
+		emailErr := services.SendMail(
+			"Verify Your Email",
+			fmt.Sprintf("<h1>Hey %v </h1> <p>Kindly use this otp to verify your email: <strong>%v</strong></p>", req.Email, otpNumber),
+			string(req.Email),
+		)
+
+		if emailErr != nil {
+			return emailErr
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return handleErrors.HandleBadRequest(c, "Otp not sent successfully")
 	}
 
 	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
