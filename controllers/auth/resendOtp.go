@@ -18,18 +18,20 @@ type SessionRequest struct {
 }
 
 func ResendOtp(c *fiber.Ctx) error {
-	// get the sessionId of previous request
-	// fetch details of session
-	//create new session with the old details and new sessionId
-	//delete former session
-	//send email to user
+
 	var req SessionRequest
+	var session models.Otp
+
 	if err := c.BodyParser(&req); err != nil {
 		// Handle error
 		return handleErrors.HandleBadRequest(c, "Invalid parameters passed")
 	}
 
-	var session models.Otp
+	missingProps := helpers.ValidateRequest(req)
+
+	if missingProps != "" {
+		return handleErrors.HandleBadRequest(c, "Invalid parameters passed. Request is missing "+missingProps)
+	}
 
 	if err := initializers.DB.Find(&session, "id = ?", req.SessionId).Error; err != nil {
 		return handleErrors.HandleBadRequest(c, "Invalid Session")
