@@ -17,8 +17,9 @@ import (
 func ForgotPassword(c *fiber.Ctx) error {
 	var req types.EmailRequest
 	var user models.User
-	c.BodyParser(&req)
+	var count int64
 
+	c.BodyParser(&req)
 	// check if email is defined
 	missingProps := helpers.ValidateRequest(req)
 
@@ -26,8 +27,10 @@ func ForgotPassword(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "Invalid parameters passed. Request is missing "+missingProps)
 	}
 
-	if err := initializers.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		return handleErrors.HandleBadRequest(c, "User account does not exist")
+	initializers.DB.First(&user).Where("email = ?", req.Email).Count(&count)
+
+	if count == 0 {
+		return handleErrors.HandleBadRequest(c, "You don't have an account, yet")
 	}
 
 	sessionId := helpers.GenerateSessionId()
