@@ -1,11 +1,11 @@
 package authControllers
 
 import (
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
-	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
 	"github.com/gofiber/fiber/v2"
@@ -28,8 +28,11 @@ func LoginController(c *fiber.Ctx) error {
 
 	//Look up the requested user
 	var user models.User
-	if result := initializers.DB.First(&user, "email = ?", req.Email); result.Error != nil || result.RowsAffected == 0 {
-		return handleErrors.HandleBadRequest(c, "This user does not exist in our database")
+	var count int64
+	initializers.DB.First(&user).Where("email = ?", req.Email).Count(&count)
+
+	if count == 0 {
+		return handleErrors.HandleBadRequest(c, "You don't have an account, yet")
 	}
 
 	//Compare sent in password with the saved user's password
@@ -56,14 +59,15 @@ func LoginController(c *fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "Authorization",
 		Value:    tokenString,
-		Expires:  time.Now().Add(30 * 24 * time.Hour), // Expires in 30 days
+		Expires:  time.Now().Add(10 * time.Minute), // Expires in 10 mins
 		SameSite: "Lax",
 		Secure:   false, // Set to true if using HTTPS
 		HTTPOnly: true,
 	})
 	//Send the token and other details to the user
-	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
-		Message: "Login Successful",
-		Data:    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "balance": user.Balance, "country": user.Country, "token": tokenString},
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Login Successful",
+		"token":   tokenString,
+		"data":    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "country": user.Country},
 	})
 }

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
-	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/helpers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
@@ -24,7 +23,6 @@ type SignupRequest struct {
 	FirstName    string
 	LastName     string
 	BusinessType string
-	BusinessName string
 	ProcessId    string
 }
 
@@ -80,7 +78,7 @@ func Signup(c *fiber.Ctx) error {
 		LastName:         req.LastName,
 		Password:         string(hash),
 		Country:          req.Country,
-		BusinessName:     req.BusinessName,
+		BusinessName:     "", //users can set their business name later
 		BusinessType:     req.BusinessType,
 		Balance:          0.00,
 		LightningAddress: "",
@@ -109,9 +107,10 @@ func Signup(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "Failed to authenticate user")
 	}
 
-	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
-		Message: "Account created successfully",
-		Data:    map[string]interface{}{"token": tokenString},
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Account created successfully",
+		"token":   tokenString,
+		"data":    map[string]interface{}{"email": req.Email, "firstName": req.FirstName, "lastName": req.LastName, "country": req.Country},
 	})
 
 }

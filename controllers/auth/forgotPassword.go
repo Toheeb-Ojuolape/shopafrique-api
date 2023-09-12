@@ -11,6 +11,7 @@ import (
 	"github.com/Toheeb-Ojuolape/shopafrique-api/services"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/types"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func ForgotPassword(c *fiber.Ctx) error {
@@ -32,8 +33,14 @@ func ForgotPassword(c *fiber.Ctx) error {
 	sessionId := helpers.GenerateSessionId()
 	otpNumber := helpers.GenerateOtp()
 	expiry := helpers.GenerateExpiry()
+	//hash the otpNumber stored in db
+	hashedOtp, hashErr := bcrypt.GenerateFromPassword([]byte(fmt.Sprint(otpNumber)), 10)
 
-	otp := models.Otp{ID: sessionId, Email: req.Email, Otp: fmt.Sprint(otpNumber), ExpiredAt: expiry}
+	if hashErr != nil {
+		return handleErrors.HandleBadRequest(c, "Failed to hash password")
+	}
+
+	otp := models.Otp{ID: sessionId, Email: req.Email, Otp: string(hashedOtp), ExpiredAt: expiry}
 
 	err := initializers.DB.Create(&otp)
 	if err.Error != nil {
