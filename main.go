@@ -35,5 +35,11 @@ func main() {
 	user := app.Group("/api/user")
 	routes.UserRoutes(user)
 
+	wallet := app.Group("/api/wallet")
+	routes.WalletRoutes(wallet)
+
+	campaigns := app.Group("/api/campaigns")
+	routes.CampaignRoutes(campaigns)
+
 	log.Fatal(app.Listen(":" + os.Getenv("PORT")))
 }

@@ -29,7 +29,7 @@ func LoginController(c *fiber.Ctx) error {
 	//Look up the requested user
 	var user models.User
 	var count int64
-	initializers.DB.First(&user).Where("email = ?", req.Email).Count(&count)
+	initializers.DB.Where("email = ?", req.Email).First(&user).Count(&count)
 
 	if count == 0 {
 		return handleErrors.HandleBadRequest(c, "You don't have an account, yet")
@@ -43,7 +43,6 @@ func LoginController(c *fiber.Ctx) error {
 	}
 
 	//Generate a JWT token
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),

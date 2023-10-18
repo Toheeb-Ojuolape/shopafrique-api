@@ -62,7 +62,6 @@ func ResetPassword(c *fiber.Ctx) error {
 	if err != nil {
 		return handleErrors.HandleBadRequest(c, "Error occured while resetting password")
 	}
-
 	//set the new password
 	if err := initializers.DB.Model(&user).Where("id = ?", user.ID).Update("password", string(hash)).Error; err != nil {
 		return handleErrors.HandleBadRequest(c, "Something went wrong while setting new password")

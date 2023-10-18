@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
@@ -8,10 +9,16 @@ import (
 )
 
 func UserController(c *fiber.Ctx) error {
-	id := c.Get("id")
+	user_id, ok := c.Locals("user_id").(string)
+	if !ok {
+		return handleErrors.HandleBadRequest(c, "Invalid user ID")
+	}
 
 	var user models.User
-	initializers.DB.First(&user, id)
+	err := initializers.DB.Where("id = ?", user_id).First(&user).Error
+	if err != nil {
+		return handleErrors.HandleBadRequest(c, "Something went wrong")
+	}
 
 	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
 		Message: "User details fetched successfully",

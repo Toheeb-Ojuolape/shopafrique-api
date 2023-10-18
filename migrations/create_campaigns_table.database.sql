@@ -1,0 +1,20 @@
+CREATE TABLE campaigns (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255),
+    description TEXT,
+    media VARCHAR(255),
+    media_type VARCHAR(255),
+    user_id UUID DEFAULT gen_random_uuid(),
+    budget FLOAT,
+    status VARCHAR(255),
+    views FLOAT,
+    clicks FLOAT,
+    impressions FLOAT,
+    start_date DATE,
+    end_date DATE,
+    objective VARCHAR(255),
+    audience JSONB,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now(),
+    deleted_at TIMESTAMP
+);
