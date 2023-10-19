@@ -23,6 +23,10 @@ func CreateCampaign(c *fiber.Ctx) error {
 		return handleErrors.HandleBadRequest(c, "Something went wrong while creating campaign")
 	}
 
+	//debit wallet of funding dedicated to budget
+
+	//throw error if funds insufficient
+
 	campaign := models.Campaign{
 		ID:          newUUID,
 		Title:       req.Title,
