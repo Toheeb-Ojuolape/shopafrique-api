@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleErrors"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/handleSuccess"
+	"github.com/Toheeb-Ojuolape/shopafrique-api/helpers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/initializers"
 	"github.com/Toheeb-Ojuolape/shopafrique-api/models"
 	"github.com/gofiber/fiber/v2"
@@ -23,6 +24,6 @@ func FetchTransactions(c *fiber.Ctx) error {
 
 	return handleSuccess.HandleSuccessResponse(c, handleSuccess.SuccessResponse{
 		Message: "Transactions fetched successfully",
-		Data:    transactions,
+		Data:    helpers.ReverseArray(transactions),
 	})
 }
