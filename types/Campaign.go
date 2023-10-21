@@ -5,7 +5,7 @@ type Campaign struct {
 	Description string
 	Media       string
 	MediaType   string
-	Budget      float64
+	Budget      string
 	Status      string
 	Views       int64
 	Clicks      int64

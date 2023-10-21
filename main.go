@@ -23,6 +23,12 @@ func main() {
 	// change this in production
 	app.Use(cors.New())
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(http.StatusOK).JSON(fiber.Map{
+			"message": "Vyouz's API is LIVE 🥳",
+		})
+	})
+
 	app.Get("/api/healthcheck", func(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).JSON(fiber.Map{
 			"message": "Everything's ok, stop worrying",

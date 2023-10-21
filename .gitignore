@@ -4,3 +4,7 @@ shopafrique.exe
 shopafrique.exe~
 shopafrique-api.exe
 shopafrique-api.exe~
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

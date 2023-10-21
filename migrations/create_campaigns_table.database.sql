@@ -2,7 +2,7 @@ CREATE TABLE campaigns (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255),
     description TEXT,
-    media VARCHAR(255),
+    media TEXT,
     media_type VARCHAR(255),
     user_id UUID DEFAULT gen_random_uuid(),
     budget FLOAT,
