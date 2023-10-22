@@ -6,6 +6,8 @@ WORKDIR /app
 
 # Copy the source code into the container
 COPY . .
+# Add your .env files
+COPY .env . 
 
 # Build the Golang binary
 RUN go build -o main .
