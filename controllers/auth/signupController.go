@@ -110,7 +110,7 @@ func Signup(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Account created successfully",
 		"token":   tokenString,
-		"data":    map[string]interface{}{"email": req.Email, "firstName": req.FirstName, "lastName": req.LastName, "country": req.Country},
+		"data":    map[string]interface{}{"email": req.Email, "firstName": req.FirstName, "lastName": req.LastName, "businessType": req.BusinessType, "country": req.Country, "balance": 0},
 	})
 
 }
