@@ -67,6 +67,6 @@ func LoginController(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Login Successful",
 		"token":   tokenString,
-		"data":    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "country": user.Country},
+		"data":    map[string]interface{}{"email": user.Email, "firstName": user.FirstName, "lastName": user.LastName, "country": user.Country, "balance": user.Balance, "businessType": user.BusinessType},
 	})
 }
