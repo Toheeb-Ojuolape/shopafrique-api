@@ -15,3 +15,7 @@ type Campaign struct {
 	Objective   string
 	Audience    map[string]interface{}
 }
+
+type CampaignID struct {
+	CampaignID string
+}
