@@ -9,4 +9,6 @@ import (
 func CampaignRoutes(campaign fiber.Router) {
 	campaign.Post("/", middleware.VerifyToken, campaignControllers.CreateCampaign)
 	campaign.Get("/", middleware.VerifyToken, campaignControllers.FetchCampaigns)
+	campaign.Get("/:id", campaignControllers.FetchSingleCampaign)
+	campaign.Patch("/:id", campaignControllers.UpdateSingleCampaign)
 }
